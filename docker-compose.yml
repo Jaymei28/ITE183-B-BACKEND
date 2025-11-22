@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  web:
+    build: ./djangobnb_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./djangobnb_backend:/usr/src/django_bnb_backend/
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env.dev
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=postgrespassword
+      - POSTGRES_DB=django_bnb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgresuser -d django_bnb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
